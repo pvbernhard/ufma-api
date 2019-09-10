@@ -5,9 +5,8 @@ exports.getName = document => {
 
   if (nameTag == null) {
     return null;
-  } else {
-    return toTitleCase(nameTag.textContent);
   }
+  return toTitleCase(nameTag.textContent);
 };
 
 exports.getAllInstitutionalDataRows = document => {
@@ -17,9 +16,8 @@ exports.getAllInstitutionalDataRows = document => {
 
   if (dataRows.length > 0) {
     return dataRows;
-  } else {
-    return null;
   }
+  return null;
 };
 
 exports.getAllAcademicIndexesDataRows = document => {
@@ -29,29 +27,30 @@ exports.getAllAcademicIndexesDataRows = document => {
 
   if (dataRows.length > 0) {
     return dataRows;
-  } else {
-    return null;
   }
+  return null;
 };
 
 exports.getDataFromDataRows = (dataRows, string) => {
   let data = null;
   if (dataRows == null) {
     return null;
-  } else {
-    for (let i = 0; i < dataRows.length; i++) {
-      if (dataRows[i].textContent.includes(string)) {
-        data = dataRows[i].querySelector('td:last-child');
-        if (data != null) {
-          data = removeExtraWhitespace(data.textContent);
-        } else {
+  }
+  for (let i = 0; i < dataRows.length; i += 1) {
+    if (dataRows[i].textContent.includes(string)) {
+      data = dataRows[i].querySelector('td:last-child');
+      if (data != null) {
+        data = removeExtraWhitespace(data.textContent);
+        if (data.length < 1) {
           data = null;
         }
-        break;
+      } else {
+        data = null;
       }
+      break;
     }
-    return data;
   }
+  return data;
 };
 
 exports.getRegistration = document => {
@@ -61,7 +60,7 @@ exports.getRegistration = document => {
 
 exports.getProgram = document => {
   const dataRows = this.getAllInstitutionalDataRows(document);
-  let programTag = this.getDataFromDataRows(dataRows, 'Curso:');
+  const programTag = this.getDataFromDataRows(dataRows, 'Curso:');
   let program = programTag;
   if (program != null) {
     program = getWords(programTag);
@@ -99,12 +98,34 @@ exports.getPerformance = document => {
 
 exports.getPendingCompulsoryWorkload = document => {
   const dataRows = this.getAllAcademicIndexesDataRows(document);
-  return this.getDataFromDataRows(dataRows, 'CH. Obrigatória Pendente');
+  const data = this.getDataFromDataRows(dataRows, 'CH. Obrigatória Pendente');
+
+  if (parseFloat(data) <= 0) {
+    // verifica se mais de 1 ano já foi cumprido já que
+    // a pendencia não pode ser zero sem pelo menos 1 ano
+    const currentYear = new Date().getFullYear();
+    if (currentYear - parseInt(this.getEntreeYear(document), 10) <= 1) {
+      return null;
+    }
+    return '0';
+  }
+  return data;
 };
 
 exports.getPendingOptionalWorkload = document => {
   const dataRows = this.getAllAcademicIndexesDataRows(document);
-  return this.getDataFromDataRows(dataRows, 'CH. Optativa Pendente');
+  const data = this.getDataFromDataRows(dataRows, 'CH. Optativa Pendente');
+
+  if (parseFloat(data) <= 0) {
+    // verifica se mais de 1 ano já foi cumprido já que
+    // a pendencia não pode ser zero sem pelo menos 1 ano
+    const currentYear = new Date().getFullYear();
+    if (currentYear - parseInt(this.getEntreeYear(document), 10) <= 1) {
+      return null;
+    }
+    return '0';
+  }
+  return data;
 };
 
 exports.getTotalCurriculum = document => {
@@ -123,6 +144,15 @@ exports.getPercentageCurriculum = document => {
     } else {
       percent = null;
     }
+  }
+  if (percent != null && parseFloat(percent) >= 100) {
+    // verifica se mais de 1 ano já foi cumprido já que
+    // não se pode ter integralizado tudo sem pelo menos 1 ano
+    const currentYear = new Date().getFullYear();
+    if (currentYear - parseInt(this.getEntreeYear(document), 10) <= 1) {
+      return null;
+    }
+    return percent;
   }
   return percent;
 };

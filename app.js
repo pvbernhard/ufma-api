@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const jsdom = require('jsdom');
+
 const { JSDOM } = jsdom;
 
 const { loginSuccessful } = require('./utils/sigaa/loginSuccessful');
@@ -21,7 +22,7 @@ app.get('/sigaa', (req, res) => {
       'É necessário um login e senha para acessar o SIGAA. <br /> <br /> (sigaa?login=seu_login&senha=sua_senha)'
     );
   } else {
-    let options = {
+    const options = {
       method: 'POST',
       url: 'https://sigaa.ufma.br/sigaa/logar.do',
       followAllRedirects: true,
@@ -41,7 +42,7 @@ app.get('/sigaa', (req, res) => {
       estudante: null
     };
 
-    request(options, (err, response, body) => {
+    request(options, (err, response) => {
       if (err) {
         console.log('err', err);
       } else {

@@ -1,26 +1,24 @@
 exports.removeExtraWhitespace = str => {
   const newStr = str.replace(/\s+/g, ' ');
-  if (newStr !== null) {
+  if (newStr != null) {
     return newStr.trim();
-  } else {
-    return null;
   }
+  return null;
 };
 
-exports.getWords = (str, { wordIndex = 0, lastWord = false } = {}) => {
+exports.getWords = (str, { userWordIndex = 0, lastWord = false } = {}) => {
   const words = str.match(/[a-zA-Z\u00C0-\u017F\s]+/g);
-  if (words !== null) {
+  let wordIndex = userWordIndex;
+  if (words != null) {
     if (lastWord) {
       wordIndex = words.length - 1;
     }
     if (typeof words[wordIndex] === 'undefined') {
       return null;
-    } else {
-      return words[wordIndex];
     }
-  } else {
-    return null;
+    return words[wordIndex];
   }
+  return null;
 };
 
 exports.toTitleCase = str => {
@@ -46,9 +44,8 @@ exports.toTitleCase = str => {
     }
     if (word.length > 2) {
       return firstChar + rest.toLowerCase();
-    } else {
-      return word.toLowerCase();
     }
+    return word.toLowerCase();
   });
   return exports.removeExtraWhitespace(output);
 };
