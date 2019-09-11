@@ -1,10 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const request = require('request');
 const jsdom = require('jsdom');
 
 const { JSDOM } = jsdom;
 
+const { connectToSigaa } = require('./utils/sigaa/request');
 const { loginSuccessful } = require('./utils/sigaa/loginSuccessful');
 const Student = require('./utils/sigaa/student');
 
@@ -14,39 +14,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 app.get('/sigaa', (req, res) => {
-  if (
-    typeof req.query.login === 'undefined' ||
-    typeof req.query.senha === 'undefined'
-  ) {
+  if (req.query.login == null || req.query.senha == null) {
     res.send(
       'É necessário um login e senha para acessar o SIGAA. <br /> <br /> (sigaa?login=seu_login&senha=sua_senha)'
     );
   } else {
-    const options = {
-      method: 'POST',
-      url: 'https://sigaa.ufma.br/sigaa/logar.do',
-      followAllRedirects: true,
-      jar: true,
-      headers: {
-        'User-Agent': 'request',
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      form: {
-        dispatch: 'logOn',
-        'user.login': req.query.login,
-        'user.senha': req.query.senha
-      }
-    };
-
     const output = {
       estudante: null
     };
-
-    request(options, (err, response) => {
-      if (err) {
-        console.log('err', err);
-      } else {
+    connectToSigaa(req.query)
+      .then(response => {
         const { document } = new JSDOM(response.body).window;
+        return document;
+      })
+      .then(document => {
         if (!loginSuccessful(document)) {
           res.send('Usuário ou senha inválidos.');
         } else {
@@ -80,8 +61,8 @@ app.get('/sigaa', (req, res) => {
 
           res.send(output);
         }
-      }
-    });
+      })
+      .catch(err => console.error(err));
   }
 });
 
