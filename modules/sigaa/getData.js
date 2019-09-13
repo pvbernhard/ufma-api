@@ -1,4 +1,19 @@
-const { toTitleCase, removeExtraWhitespace, getWords } = require('../string');
+const {
+  toTitleCase,
+  removeExtraWhitespace,
+  getWords
+} = require('../../util/string');
+
+exports.loginSuccessful = document => {
+  const logoff = document.querySelector('#info-sistema > span > a');
+  if (logoff == null) {
+    return false;
+  }
+  if (logoff.textContent !== 'SAIR') {
+    return false;
+  }
+  return true;
+};
 
 exports.getName = document => {
   const nameTag = document.querySelector('#info-usuario > p.usuario > span');
